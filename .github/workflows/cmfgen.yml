@@ -1,0 +1,83 @@
+name: CMFGEN changes update
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # run in every 10 minutes
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      CMFGEN_URL: https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/
+      CMFGEN_DB_VER: atomic_data_15nov16.tar.gz
+      #working-directory: ./s-rathi/Atomic-database
+    outputs:
+      hash_output: ${{ steps.hash.outputs.hash_value }}
+      change_output: ${{ steps.condition.outputs.change }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Download data
+        run: |
+          wget -q -U "Mozilla/4.0" https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/atomic_data_15nov16.tar.gz -O atomic.tar.gz
+          tar -zxf atomic.tar.gz atomic
+
+      - name: Create hash
+        run: |
+          sha256sum atomic.tar.gz | cut -d ' ' -f 1 > hash.txt
+
+      - name: Read hash file
+        id: hash
+        run: |
+          HASH=$(cat hash.txt)                  
+          echo "hash_value=$HASH" >> "$GITHUB_OUTPUT"
+
+      - name: Compare hash
+        id: condition
+        run: |
+          JSON_HASH=$(cat cmfgen.json | jq -r '.hash')
+          DOWNLOAD_HASH=${{ steps.hash.outputs.hash_value }}
+
+          if [ "$JSON_HASH" = "$DOWNLOAD_HASH" ]; then
+            echo "There are no changes in the files!"
+          else
+            FILE_CHANGE="Yes"
+            echo "change=$FILE_CHANGE" >> "$GITHUB_OUTPUT"
+            echo "There are changes in the files!"
+          fi
+
+  file_update:
+    needs: build
+    if: ${{ needs.build.outputs.change_output == 'Yes' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      # - name: append file
+      #  uses: DamianReeves/write-file-action@master
+
+      - name: Append new hash to cmfgen.json
+        run: |
+          DOWNLOAD_HASH=${{ needs.build.outputs.hash_output }}
+          echo "{\"hash\": \"${{ needs.build.outputs.hash_output }}\"}" >> cmfgen.json
+
+      - name: Commit files to git
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git add ./cmfgen.json
+          git commit -m "Add cmfgen.json"
+        #  git pull origin test_features
+
+      - name: Push changes # push the file
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
