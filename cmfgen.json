@@ -1,1 +1,10 @@
-{"hash": "b5fa6925c6ddf9ae80b5bbcc9eea3c11379b95c069b34f51c39666071e91bf2d"}
+{
+  "hash": "b5fa6925c6ddf9ae80b5bbcc9eea3c11379b95c069b34f51c39666071e91bf2d",
+  "datasets": {
+    "b5fa6925c6ddf9ae80b5bbcc9eea3c11379b95c069b34f51c39666071e91bf2d": {
+      "update_datetime": "2023-06-07T16:40:08",
+      "source": "https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/atomic_data_15nov16.tar.gz"
+    }
+  },
+  "latest": "b5fa6925c6ddf9ae80b5bbcc9eea3c11379b95c069b34f51c39666071e91bf2d"
+}
