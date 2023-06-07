@@ -16,14 +16,18 @@ jobs:
     outputs:
       hash_output: ${{ steps.hash.outputs.hash_value }}
       change_output: ${{ steps.condition.outputs.change }}
+      source_url: ${{ steps.download_data.outputs.source_url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Download data
+        id: download_data
         run: |
-          wget -q -U "Mozilla/4.0" https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/atomic_data_15nov16.tar.gz -O atomic.tar.gz
+          SOURCE_URL=https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/atomic_data_15nov16.tar.gz
+          wget -q -U "Mozilla/4.0" $SOURCE_URL -O atomic.tar.gz
           tar -zxf atomic.tar.gz atomic
+          echo "source_url=$SOURCE_URL" >> "$GITHUB_OUTPUT"
 
       - name: Create hash
         run: |
@@ -38,7 +42,7 @@ jobs:
       - name: Compare hash
         id: condition
         run: |
-          JSON_HASH=$(cat cmfgen.json | jq -r '.hash')
+          JSON_HASH=$(cat cmfgen.json | jq -r '.latest')
           DOWNLOAD_HASH=${{ steps.hash.outputs.hash_value }}
 
           if [ "$JSON_HASH" = "$DOWNLOAD_HASH" ]; then
@@ -65,16 +69,16 @@ jobs:
 
       - name: Append new hash to cmfgen.json
         run: |
-          DOWNLOAD_HASH=${{ needs.build.outputs.hash_output }}
-          echo "{\"hash\": \"${{ needs.build.outputs.hash_output }}\"}" >> cmfgen.json
+          NOW=$(date +'%Y-%m-%dT%H:%M:%S')
+          cat <<< $(jq '.datasets += {"${{ needs.build.outputs.hash_output }}": {"update_datetime": "'$NOW'", "source": "${{ needs.build.outputs.source_url }}"}}' cmfgen.json) > cmfgen.json
+          cat <<< $(jq '.latest = "${{ needs.build.outputs.hash_output }}"' cmfgen.json) > cmfgen.json
 
       - name: Commit files to git
         run: |
           git config --local user.name "GitHub Actions"
           git config --local user.email "actions@github.com"
           git add ./cmfgen.json
-          git commit -m "Add cmfgen.json"
-        #  git pull origin test_features
+          git commit -m "Add cmfgen.json"          
 
       - name: Push changes # push the file
         uses: ad-m/github-push-action@master
