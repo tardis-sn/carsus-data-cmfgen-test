@@ -1,13 +1,12 @@
 {
-  "latest": "test_hash",
+  "latest": "5dd626543510b196536e7818a5bd91b68a4a86055045e46c2a5a940c250d68eb",
   "datasets": {
-    "1125021": {
-      "update_datetime": "",
-      "source": ""
-    },
-    "test_hash": {
-      "update_datetime": "2023-06-07T11:20:50",
-      "source": "example.com"
+    "5dd626543510b196536e7818a5bd91b68a4a86055045e46c2a5a940c250d68eb": {
+      "update_datetime": "2023-06-07T16:40:08",
+      "source": "local",
+      "destination": "db/5dd626543510b196536e7818a5bd91b68a4a86055045e46c2a5a940c250d68eb/atomic.tar.gz",
+      "changes": "",
+      "previous": ""
     }
   }
 }
