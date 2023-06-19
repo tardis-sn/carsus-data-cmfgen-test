@@ -71,9 +71,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Fetch LFS objects
-        run: git lfs pull -I ${{ steps.condition.outputs.previous_file }}
-
       - name: Compare datasets
         run: |
           tar -zxf ${{ steps.condition.outputs.previous_file }} -C ~/temp/data/
