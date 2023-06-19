@@ -1,0 +1,57 @@
+name: CMFGEN changes update
+
+on:
+  schedule:
+    - cron: '0 0 1 * *' # run in every 10 minutes
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      CMFGEN_URL: https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/
+      CMFGEN_DB_VER: atomic_data_15nov16.tar.gz
+      #working-directory: ./s-rathi/Atomic-database
+    steps:
+      - name: Checkout github repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          lfs: false
+
+      - name: Configure git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Make temporary directories
+        id: setup
+        run: |
+          mkdir -p ~/temp/data
+          cd ~/temp/data
+          git init
+          
+      - name: Delet the previous data
+        id: delet_previous_data
+        run: |
+          rm -rf ./atomic 
+
+      - name: Download data
+        id: download_data
+        run: |
+          SOURCE_URL=https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/atomic_data_15nov16.tar.gz
+          wget -q -U "Mozilla/4.0" $SOURCE_URL -O ~/temp/atomic.tar.gz
+          tar -zxf ~/temp/atomic.tar.gz 
+          
+      - name: Commit files to git
+        run: |
+          git add .
+          git commit -m "Data set added"
+
+      - name: Push changes # push the file
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
