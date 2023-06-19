@@ -1,0 +1,107 @@
+name: CMFGEN changes update
+
+on:
+  # schedule:
+  #   - cron: "*/10 * * * *" # run in every 10 minutes
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      CMFGEN_URL: https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/
+      CMFGEN_DB_VER: atomic_data_15nov16.tar.gz
+    
+    steps:
+      - name: Checkout github repo
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          lfs: false
+
+      - name: Configure git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Make temporary directories
+        id: setup
+        run: |
+          mkdir -p ~/temp/data
+          cd ~/temp/data
+          git init
+
+      - name: Download data
+        id: download_data
+        run: |
+          SOURCE_URL=https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/atomic_data_15nov16.tar.gz
+          wget -q -U "Mozilla/4.0" $SOURCE_URL -O ~/temp/atomic.tar.gz
+          echo "source_url=$SOURCE_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Create hash
+        id: hash
+        run: |
+          HASH=$(sha256sum ~/temp/atomic.tar.gz | cut -d ' ' -f 1)
+          echo "hash_value=$HASH" >> "$GITHUB_OUTPUT"
+
+      - name: Compare hash
+        id: condition
+        run: |
+          JSON_HASH=$(cat cmfgen.json | jq -r '.latest')
+          DOWNLOAD_HASH=${{ steps.hash.outputs.hash_value }}
+
+          if [ "$JSON_HASH" = "$DOWNLOAD_HASH" ]; then
+            echo "There are no changes in the files!"
+          else
+            FILE_CHANGE="Yes"
+            PREVIOUS_FILE=$(cat cmfgen.json | jq -r '.datasets["'"$JSON_HASH"'"]["destination"]')
+            echo "previous_file=$PREVIOUS_FILE" >> "$GITHUB_OUTPUT"
+            echo "previous_hash=$JSON_HASH" >> "$GITHUB_OUTPUT"
+            echo "change=$FILE_CHANGE" >> "$GITHUB_OUTPUT"
+            echo "There are changes in the files!"
+          fi
+
+      - name: End job if no changes
+        if: ${{ steps.condition.outputs.change != 'Yes' }}
+        run: |
+          gh run cancel ${{ github.run_id }}
+          gh run watch ${{ github.run_id }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch LFS objects
+        run: git lfs pull -I ${{ steps.condition.outputs.previous_file }}
+
+      - name: Compare datasets
+        run: |
+          tar -zxf ${{ steps.condition.outputs.previous_file }} -C ~/temp/data/
+          cd ~/temp/data/
+          git add .
+          git commit -m "Source file"
+          tar -zxf ~/temp/atomic.tar.gz -C ~/temp/data/
+          git diff -U0 > ~/temp/changes.log
+
+      - name: Add new files to git
+        run: |
+          mkdir -p db/${{ steps.hash.outputs.hash_value }}
+          mv ~/temp/atomic.tar.gz db/${{ steps.hash.outputs.hash_value }}/
+          mv ~/temp/changes.log db/${{ steps.hash.outputs.hash_value }}/
+
+      - name: Append new hash to cmfgen.json
+        run: |
+          NOW=$(date +'%Y-%m-%dT%H:%M:%S')
+          cat <<< $(jq '.datasets += {"${{ steps.hash.outputs.hash_value }}": {"update_datetime": "'$NOW'", "source": "${{ steps.download_data.outputs.source_url }}", "destination": "db/${{ steps.hash.outputs.hash_value }}/atomic.tar.gz", "changes": "db/${{ steps.hash.outputs.hash_value }}/changes.log", "previous": "${{ steps.condition.outputs.previous_hash }}"}}' cmfgen.json) > cmfgen.json
+          cat <<< $(jq '.latest = "${{ steps.hash.outputs.hash_value }}"' cmfgen.json) > cmfgen.json
+
+      - name: Commit files to git
+        run: |
+          git add .
+          git commit -m "Updated dataset"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
