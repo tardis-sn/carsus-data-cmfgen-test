@@ -1,8 +1,8 @@
-name: Notification on SLACK
+name: Check CMFGEN data update workflow
 
 on:
   schedule:
-    - cron: '0 0 1 * *' # run in every 10 minutes
+    - cron: '0 0 * * 5' # run in every 10 minutes
   workflow_dispatch:
 
 jobs:
@@ -62,9 +62,16 @@ jobs:
         uses: ravsamhq/notify-slack-action@v1
         with:
           status: ${{ job.status }} 
-          #notify_when: 'failure'
           notification_title: '{workflow} has {status_message}'
           message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
           footer: 'Linked to Repo <{repo_url}|{repo}>'
+          fields: |
+            [
+              {
+                "title": "Error",
+                "value": "${{ job.steps.Commit files to git }}",
+                "short": false
+              }
+            ]
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
