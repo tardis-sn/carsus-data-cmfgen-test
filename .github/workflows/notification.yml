@@ -65,13 +65,5 @@ jobs:
           notification_title: '{workflow} has {status_message}'
           message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
           footer: 'Linked to Repo <{repo_url}|{repo}>'
-          fields: |
-            [
-              {
-                "title": "Error",
-                "value": "${{ job.steps.Commit files to git }}",
-                "short": false
-              }
-            ]
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
