@@ -48,7 +48,7 @@ jobs:
           tar -zxf ~/temp/atomic.tar.gz 
           
       - name: Commit files to git
-        id: commit changes
+        id: commit_changes
         run: |
           git add .
           git commit -m "Data set added"
