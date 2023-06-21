@@ -2,7 +2,7 @@ name: Check CMFGEN data update workflow
 
 on:
   schedule:
-    - cron: '0 0 * * 5' # run in every 10 minutes
+    - cron: '0 0 * * 5' 
   workflow_dispatch:
 
 jobs:
@@ -32,11 +32,10 @@ jobs:
       - name: Make temporary directories
         id: setup
         run: |
-          mkdir -p ~/temp/data
-          cd ~/temp/data
+          mkdir ~/temp
           
       - name: Delete the previous data
-        id: delet_previous_data
+        id: delete_previous_data
         run: |
           rm -rf ./atomic 
 
@@ -51,9 +50,9 @@ jobs:
         id: commit_changes
         run: |
           git add .
-          git commit -m "Data set added"
+          git commit -m "New dataset added"
 
-      - name: Push changes # push the file
+      - name: Push changes 
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
