@@ -8,8 +8,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
     steps:
+      - uses: act10ns/slack@v1
+        with:
+          status: starting
+          message: Starting Check CMFGEN data update workflow
+        if: always()
+        
       - name: Checkout github repo
         uses: actions/checkout@v3
         with:
@@ -20,8 +28,7 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          
-          
+                
       - name: Make temporary directories
         id: setup
         run: |
@@ -41,6 +48,7 @@ jobs:
           tar -zxf ~/temp/atomic.tar.gz 
           
       - name: Commit files to git
+        id: commit changes
         run: |
           git add .
           git commit -m "Data set added"
@@ -57,14 +65,9 @@ jobs:
      #     url: ${{ secrets.SLACK_WEBHOOK }}
      #     text: Hello world!
                     
-      - name: Report Status
-        if: always()
-        uses: ravsamhq/notify-slack-action@v1
+      - name: Report status 
+        uses: act10ns/slack@v1
         with:
-          status: ${{ job.status }} 
+          status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
-          notification_title: '{workflow} has {status_message}'
-          message_format: '{emoji} *{workflow}* {status_message} in <{repo_url}|{repo}>'
-          footer: 'Linked to Repo <{repo_url}|{repo}>'
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: always()
