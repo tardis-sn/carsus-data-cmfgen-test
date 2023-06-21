@@ -35,7 +35,7 @@ jobs:
           mkdir -p ~/temp/data
           cd ~/temp/data
           
-      - name: Delet the previous data
+      - name: Delete the previous data
         id: delet_previous_data
         run: |
           rm -rf ./atomic 
