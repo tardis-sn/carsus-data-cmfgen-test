@@ -5,6 +5,10 @@
               FeIV(3d4(3G)4p_2Ho[9/2]-3d5_4Fe[9/2])
               FeIV(3d4(3G)4p_4Ho[7/2]-3d5_2D3e[5/2])
  
+ [Reference] Oscillator strengths for Fe\,{\sc iv} were computed by Bob Kurucz \citep{Kur09_ATD} and were obtained from
+ [Reference] ihis website \citep{Kur_web} (before 2001).The oscillator strengths of two lines that overlap with the 
+ [Reference] He\,{\i} resonance line near 58.4 nm were reduced by a factor of ten \citep[see][]{NHP06_HeI}.
+
                              g        E(cm^-1)    10^15 Hz     eV       Lam(A)       ID      ARAD       GAM2        GAM4
 ************************************************************************************************************************
  

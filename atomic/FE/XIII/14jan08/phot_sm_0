@@ -19,7 +19,7 @@
 13-Jan-2008                             !Date
 804                                     !Number of energy levels
 1                                       !Number of photoionization routes
-15.0                                    !Screened nuclear charge
+13.0                                    !Screened nuclear charge
 3s2_3p_2Po                              !Final state in ion
 0.0                                     !Excitation energy of final state
 6.0                                     !Statistical weight of ion

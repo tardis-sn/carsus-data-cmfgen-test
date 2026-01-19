@@ -20,7 +20,7 @@
 358                                     !Number of energy levels
 2                                       !Number of photoionization routes
 2.0                                     !Screened nuclear charge
-2s2_2p_2Po                              !Final state in ion
+2s2_2p_2Po/2s2s2p2Po                    !Final state in ion
 0.0                                     !Excitation energy of final state
 6.0                                     !Statistical weight of ion
 0.0                                     !Sigma used for Gaussian smoothing (km/s)

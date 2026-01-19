@@ -1,7 +1,7 @@
 **************************************************************************************************************************
 **************************************************************************************************************************
 
-Collision strengths (Omega[i,k]) for Co II. The collisional excitation rate
+Collision strengths (Omega[i,k]) for Cr II. The collisional excitation rate
 is defined by
 
            C(i,k)=8.63D-08 OMEGA(i,k) EXP(-U0) / Gi /sqrt(T_4).
