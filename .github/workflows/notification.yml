@@ -42,7 +42,7 @@ jobs:
       - name: Download data
         id: download_data
         run: |
-          SOURCE_URL=https://kookaburra.phyast.pitt.edu/hillier/cmfgen_files/atomic_data_15nov16.tar.gz
+          SOURCE_URL=https://sites.pitt.edu/~hillier/cmfgen_files/atomic_data_21jun23.tar.gz
           wget -q -U "Mozilla/4.0" $SOURCE_URL -O ~/temp/atomic.tar.gz
           tar -zxf ~/temp/atomic.tar.gz 
           
